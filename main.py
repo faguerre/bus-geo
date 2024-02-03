@@ -7,9 +7,7 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 
-
-
-@app.get("/")
+@app.get("/map")
 async def get_map(request: Request):
     # Example coordinates list
     coordinates_list = [
@@ -69,6 +67,6 @@ async def update_coordinates(request: Request):
     else:
         return {"message": "Failed to update coordinates."}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -1,1 +1,1 @@
-web: gunicorn -w 2 -k uvicorn.workers.UvicornWorker app:app --port 3000
+web: gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app
