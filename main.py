@@ -1,14 +1,17 @@
 
 from fastapi import FastAPI, Request
 from starlette.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import json, requests
 
 
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/map")
+
+@app.get("/")
 async def get_map(request: Request):
     # Example coordinates list
     coordinates_list = [
@@ -21,7 +24,7 @@ async def get_map(request: Request):
 async def update_coordinates(request: Request):
     # Get number from form data
     form_data = await request.form()
-    number = int(form_data.get("coordinates"))
+    number = str(form_data.get("coordinates"))
 
     headers = {
         'Accept': 'application/json, text/javascript',
@@ -67,7 +70,3 @@ async def update_coordinates(request: Request):
         return templates.TemplateResponse("map.html", {"request": request, "coordinates_list": json.dumps(coordinatesList) })
     else:
         return {"message": "Failed to update coordinates."}
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="127.0.0.1", port=8000)

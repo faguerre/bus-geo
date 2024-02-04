@@ -11,14 +11,4 @@ h1 {
 #map {
     margin-top: 20px;
     text-align: center;
-    background-color: aqua;
-}
-
-.title {
-    margin-bottom: 10%;
-    background-color: aqua;
-}
-
-#coordinates-form {
-    background-color: aqua;
 }

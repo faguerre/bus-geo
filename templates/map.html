@@ -12,16 +12,16 @@
         href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"
     />
 </head>
-<body>
-    <h1 class="title">BusGeo</h1>
+<body style="font-family: Arial, sans-serif;">
+    <h1 class="title" style="color: blue;">BusGeo</h1>
     <div>
-        <form class = "coordinates-form" id="coordinates-form" method="post" action="/update_coordinates">
-            <label for="coordinates">BUS LINE:</label>
+        <form class = "coordinates-form" id="coordinates-form" method="post" action="/update_coordinates" style="margin-bottom: 1%;">
+            <label for="coordinates" style="padding: 2%;">BUS LINE:</label>
             <input type="text" id="coordinates" name="coordinates">
             <button type="submit">Update status</button>
         </form>
     </div>
-    <div id="map" class = "map" style="width: 600px; height: 400px"></div>
+    <div id="map" class = "map" style="width: 600px; height: 400px;"></div>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -32,16 +32,23 @@
             console.log("Parsed Coordinates List:", coordinates_list);  // Debugging
 
             var map = L.map('map').setView([-34.918194, -56.156693], 13);
-            mapLink = 
-                '<a href="http://openstreetmap.org">OpenStreetMap</a>';
-            L.tileLayer(
-                'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.icon({
+                iconUrl: 'bus.jpg'
+            })
+            mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+            L.tileLayer( 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; ' + mapLink + ' Contributors',
                 maxZoom: 18,
-                }).addTo(map);
+            }).addTo(map);
+
+
+            var customIcon = L.icon({
+                iconUrl: '/static/bus4.png',  // Specify the path to the icon image
+                iconSize: [42, 42],           // Size of the icon
+            });
 
             for (var i = 0; i < coordinates_list.length; i++) {
-                marker = new L.marker([coordinates_list[i][1],coordinates_list[i][2]])
+                marker = new L.marker([coordinates_list[i][1],coordinates_list[i][2]], { icon: customIcon })
                     .bindPopup(coordinates_list[i][0])
                     .addTo(map);
             }
