@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BusGeo</title>
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <title>BusGeo</title>
     <meta charset="utf-8" />
     <link 
         rel="stylesheet" 
@@ -13,12 +12,15 @@
     />
 </head>
 <body style="font-family: Arial, sans-serif;">
-    <h1 class="title" style="color: blue;">BusGeo</h1>
+    <!-- <h1 class="title" style="color: blue;">BusGeo</h1> -->
+    <h1 class="title" style="color: blue; cursor: pointer;">BusGeo</h1>
     <div>
-        <form class = "coordinates-form" id="coordinates-form" method="post" action="/update_coordinates" style="margin-bottom: 1%;">
-            <label for="coordinates" style="padding: 2%;">BUS LINE:</label>
-            <input type="text" id="coordinates" name="coordinates">
+        <label style="margin-bottom: 1%;">Refresh every 15 seconds</label>
+        <br>
+        <form class = "coordinates-form" id="coordinates-form" method="post" action="/map" style="margin-bottom: 1%;">
             <button type="submit">Update status</button>
+            
+            <input type="text" id="coordinates" name="coordinates">
         </form>
     </div>
     <div id="map" class = "map" style="width: 600px; height: 400px;"></div>
@@ -28,10 +30,46 @@
 
     <script>
 
+            function updateMap() {
+                fetch('/coordinates')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length !== 0) {
+                            console.log('Coordinates updated:', data);
+                            // Clear existing markers
+                            map.eachLayer(layer => {
+                                if (layer instanceof L.Marker) {
+                                    map.removeLayer(layer);
+                                }
+                            });
+
+                            for (var i = 0; i < data.length; i++) {
+                                marker = new L.marker([data[i][1],data[i][2]], { icon: customIcon })
+                                    .bindPopup(data[i][0])
+                                    .addTo(map);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching coordinates:', error);
+                    });
+            }
+
+
+
+            // // Initial call to updateMap when the page loads
+            // updateMap();
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelector('.title').addEventListener('click', function() {
+                    window.location.href = '/';
+                });
+            });
+
             var coordinates_list = JSON.parse('{{ coordinates_list | safe }}');
             console.log("Parsed Coordinates List:", coordinates_list);  // Debugging
 
-            var map = L.map('map').setView([-34.918194, -56.156693], 13);
+            var map = L.map('map').setView([-34.9099, -56.1944], 13);
             L.icon({
                 iconUrl: 'bus.jpg'
             })
@@ -40,7 +78,6 @@
                 attribution: '&copy; ' + mapLink + ' Contributors',
                 maxZoom: 18,
             }).addTo(map);
-
 
             var customIcon = L.icon({
                 iconUrl: '/static/bus4.png',  // Specify the path to the icon image
@@ -52,7 +89,20 @@
                     .bindPopup(coordinates_list[i][0])
                     .addTo(map);
             }
-                
+
+            // Execute updateMap every 15 seconds, only 10 times
+            console.log(coordinates_list, "coordinates_listcoordinates_list")
+            if(coordinates_list.length !== 0){
+                var counter = 0;
+                var intervalId = setInterval(function() {
+                    updateMap();
+                    counter++;
+                    if (counter >= 20) {
+                        clearInterval(intervalId); // Stop the interval after 10 iterations
+                    }
+                }, 15000);
+            }
+
         </script>
 </body>
 </html>
