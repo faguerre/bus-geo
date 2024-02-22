@@ -15,7 +15,7 @@
     <!-- <h1 class="title" style="color: blue;">BusGeo</h1> -->
     <h1 class="title" style="color: blue; cursor: pointer;">BusGeo</h1>
     <div>
-        <label style="margin-bottom: 1%;">Refresh every 15 seconds</label>
+        <div id="counter-value">0 of 10 updates - 10 seconds interval</div>
         <br>
         <form class = "coordinates-form" id="coordinates-form" method="post" action="/map" style="margin-bottom: 1%;">
             <button type="submit">Update status</button>
@@ -34,8 +34,8 @@
                 fetch('/coordinates')
                     .then(response => response.json())
                     .then(data => {
+                        // console.log('Coordinates:', data[0]);
                         if (data.length !== 0) {
-                            console.log('Coordinates updated:', data);
                             // Clear existing markers
                             map.eachLayer(layer => {
                                 if (layer instanceof L.Marker) {
@@ -43,10 +43,26 @@
                                 }
                             });
 
-                            for (var i = 0; i < data.length; i++) {
-                                marker = new L.marker([data[i][1],data[i][2]], { icon: customIcon })
-                                    .bindPopup(data[i][0])
-                                    .addTo(map);
+                            let counter = 1
+
+                            for (const [id_bus, marker_values] of Object.entries(data[0])) {
+
+                                    let path_image = '/static/bus'+counter.toString()+'.png'
+
+                                    let customIcon = L.icon({
+                                            iconUrl: path_image,
+                                            iconSize: [42, 42]
+                                    });
+
+                                    for (const [key, value] of Object.entries(marker_values)) {
+                                        marker = new L.marker(
+                                            [value.coordatates[0], value.coordatates[1]], 
+                                            { icon: customIcon }
+                                        )
+                                        .bindPopup(value.name)
+                                        .addTo(map);
+                                    }
+                                    counter = counter + 1
                             }
                         }
                     })
@@ -67,39 +83,55 @@
             });
 
             var coordinates_list = JSON.parse('{{ coordinates_list | safe }}');
-            console.log("Parsed Coordinates List:", coordinates_list);  // Debugging
+            console.log("Parsed Coordinates List:", coordinates_list[0]);  // Debugging
 
             var map = L.map('map').setView([-34.9099, -56.1944], 13);
-            L.icon({
-                iconUrl: 'bus.jpg'
-            })
+
             mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
             L.tileLayer( 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; ' + mapLink + ' Contributors',
                 maxZoom: 18,
             }).addTo(map);
 
-            var customIcon = L.icon({
-                iconUrl: '/static/bus4.png',  // Specify the path to the icon image
-                iconSize: [42, 42],           // Size of the icon
-            });
+            let list_coodinates = coordinates_list[0]
+            let counter = 1
 
-            for (var i = 0; i < coordinates_list.length; i++) {
-                marker = new L.marker([coordinates_list[i][1],coordinates_list[i][2]], { icon: customIcon })
-                    .bindPopup(coordinates_list[i][0])
-                    .addTo(map);
+            for (const [id_bus, marker_values] of Object.entries(coordinates_list[0])) {
+                    let path_image = '/static/bus'+counter.toString()+'.png'
+
+                    let customIcon = L.icon({
+                            iconUrl: path_image,
+                            iconSize: [42, 42]
+                    });
+
+                    for (const [key, value] of Object.entries(marker_values)) {
+
+                        marker = new L.marker(
+                            [value.coordatates[0], value.coordatates[1]], 
+                            { icon: customIcon }
+                        )
+                        .bindPopup(value.name)
+                        .addTo(map);
+                    }
+                    counter = counter + 1
             }
 
             // Execute updateMap every 15 seconds, only 10 times
-            console.log(coordinates_list, "coordinates_listcoordinates_list")
+            // console.log(coordinates_list, "coordinates_listcoordinates_list")
             if(coordinates_list.length !== 0){
-                var counter = 0;
-                var intervalId = setInterval(function() {
+                let counter = 0;
+                let intervalId = setInterval(function() {
                     updateMap();
                     counter++;
-                    if (counter >= 20) {
+                    if (counter >= 10) {
                         clearInterval(intervalId); // Stop the interval after 10 iterations
                     }
+                    if(counter === 11){
+                        document.getElementById('counter-value').textContent = "Refresh search for real-time updates.";
+                    }else{
+                        document.getElementById('counter-value').textContent = counter + " of 10 updates - 10 seconds interval";
+                    }
+                    
                 }, 15000);
             }
 

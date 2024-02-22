@@ -3,10 +3,13 @@ from starlette.templating import Jinja2Templates
 import json
 import requests
 import asyncio, datetime
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Global variables
 headers = {
@@ -52,7 +55,7 @@ async def update_coordinates(request: Request, background_tasks: BackgroundTasks
 async def refresh_coordinates():
     global coordinates_list
     while True:
-        await asyncio.sleep(15)
+        await asyncio.sleep(12)
         coordinates_list = await request_method(bus_line)
 
 async def request_method(bus_line):
@@ -73,14 +76,33 @@ async def request_method(bus_line):
 
         if response.status_code == 200:
             resp = response.json()
+            
             for feature in resp["features"]:
-                
+
+                destino = str(feature["properties"]["destino"])
                 destinoDesc = feature["properties"]["destinoDesc"]
                 coordinates = feature["geometry"]["coordinates"]
                 coordinates.reverse()  # Switch the order of the coordinates
-                properties = [str(bus_line) + " - Destino: "+destinoDesc] + coordinates
-                coordinatesList.append(properties)
 
+                _d = {
+                    "name" : str(bus_line) + " - Destino: "+destinoDesc,
+                    "coordatates": coordinates
+                }
+                
+                if len(coordinatesList) == 0:
+                    coordinatesList.append(
+                        {
+                            destino : [_d]
+                        })
+                else:
+                    for item in coordinatesList:
+                        # Check if "destino2" key exists in the current dictionary
+                        if destino in item:
+                            # If it exists, append the new destination to the list
+                            item[destino].append(_d)
+                        else:
+                            # If it doesn't exist, create a new dictionary with "destino2" key and a list containing the new destination
+                            item[destino] = [_d]
         else:
             print(response.status_code)
 
