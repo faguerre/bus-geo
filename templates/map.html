@@ -15,7 +15,7 @@
     <!-- <h1 class="title" style="color: blue;">BusGeo</h1> -->
     <h1 class="title" style="color: blue; cursor: pointer;">BusGeo</h1>
     <div>
-        <div id="counter-value">0 of 10 updates - 10 seconds interval</div>
+        <div id="counter-value">0 of 20 updates - 10 seconds interval</div>
         <br>
         <form class = "coordinates-form" id="coordinates-form" method="post" action="/map" style="margin-bottom: 1%;">
             <button type="submit">Update status</button>
@@ -123,15 +123,10 @@
                 let intervalId = setInterval(function() {
                     updateMap();
                     counter++;
-                    if (counter >= 10) {
+                    if (counter >= 20) {
                         clearInterval(intervalId); // Stop the interval after 10 iterations
                     }
-                    if(counter === 11){
-                        document.getElementById('counter-value').textContent = "Refresh search for real-time updates.";
-                    }else{
-                        document.getElementById('counter-value').textContent = counter + " of 10 updates - 10 seconds interval";
-                    }
-                    
+                    document.getElementById('counter-value').textContent = counter + " of 20 updates - 10 seconds interval";
                 }, 15000);
             }
 
